@@ -2,6 +2,7 @@
 import datetime
 import logging
 import time
+from copy import deepcopy
 
 import torch
 import torch.distributed as dist
@@ -59,7 +60,8 @@ def do_train(
         arguments["iteration"] = iteration
 
         images = images.to(device)
-        targets = [target.to(device) for target in targets]
+        # deepcopying targets here as a potential fix to FD leaking causing crashes
+        targets = [target.to(device) for target in deepcopy(targets)]
 
         loss_dict = model(images, targets)
 
