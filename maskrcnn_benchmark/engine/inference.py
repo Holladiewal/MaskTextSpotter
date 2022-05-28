@@ -7,6 +7,7 @@ import os
 from collections import OrderedDict
 
 import torch
+import torch.distributed
 
 from tqdm import tqdm
 
@@ -360,8 +361,10 @@ def inference(
     # convert to a torch.device for efficiency
     device = torch.device(device)
     num_devices = (
-        torch.distributed.deprecated.get_world_size()
-        if torch.distributed.deprecated.is_initialized()
+        # torch.distributed.deprecated.get_world_size()
+        torch.distributed.get_world_size()
+        # if torch.distributed.deprecated.is_initialized()
+        if torch.distributed.is_initialized()
         else 1
     )
     logger = logging.getLogger("maskrcnn_benchmark.inference")
