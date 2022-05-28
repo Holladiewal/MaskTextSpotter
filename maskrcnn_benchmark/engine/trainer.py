@@ -58,8 +58,6 @@ def do_train(
         data_time = time.time() - end
         arguments["iteration"] = iteration
 
-        scheduler.step()
-
         images = images.to(device)
         targets = [target.to(device) for target in targets]
 
@@ -75,7 +73,12 @@ def do_train(
         losses.backward()
         if cfg.SOLVER.USE_ADAM:
             torch.nn.utils.clip_grad_norm_(model.parameters(), 0.5)
+
+        # Newer pytorch versions no longer need the scheduler to step before the optimizer,
+        # and with stepping after optimizing, we don't skip the first scheduler step
+
         optimizer.step()
+        scheduler.step()
 
         batch_time = time.time() - end
         end = time.time()
