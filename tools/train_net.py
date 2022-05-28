@@ -149,7 +149,7 @@ def main():
     output_dir = cfg.OUTPUT_DIR
     if output_dir:
         mkdir(output_dir)
-
+    args.host = os.environ["SLURMD_NODENAME"]
     logger = setup_logger("maskrcnn_benchmark", output_dir, get_rank())
     logger.info("Using {} GPUs".format(num_gpus))
     logger.info(args)
@@ -165,7 +165,7 @@ def main():
 
     model = train(cfg, args.local_rank, args.distributed)
 
-    if not args.skip_test:
+    if not args.skip_test and get_rank() == 0:  # Test on single gpu only
         test(cfg, model, args.distributed)
 
 
