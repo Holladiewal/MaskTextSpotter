@@ -10,9 +10,14 @@ from maskrcnn_benchmark.structures.segmentation_mask import SegmentationMask, Se
 import numpy as np
 import torch
 import pickle
+from threading import Lock
+
 
 class SynthtextDataset(object):
-    def __init__(self, use_charann, list_file_path, imgs_dir, gts_dir, transforms=None):
+    tar_mmap = None
+    tar_lock = Lock()
+    
+    def __init__(self, use_charann, list_file_path, imgs_dir, gts_dir, from_tar, prefault_tar=True, transforms=None):
         self.use_charann = use_charann
         list_file = open(list_file_path, 'r')
         image_lines = list_file.readlines()
@@ -23,6 +28,14 @@ class SynthtextDataset(object):
         self.min_proposal_size = 2
         self.char_classes = '_0123456789abcdefghijklmnopqrstuvwxyz'
         self.vis = False
+        self.from_tar = from_tar
+        if from_tar:
+            import mmap
+            with self.tar_lock, open('datasets/mjsynth.tar', 'rb') as f:
+                self.tar_mmap = mmap.mmap(f.fileno(), 0, flags=mmap.MAP_SHARED, prot=mmap.ACCESS_READ)
+                if prefault_tar:  # from py3.10 onwards, mmap supports the prefault flag so this won't be necessary anymore
+                    self.tar_mmap.read()
+                    self.tar_mmap.seek(0)
 
     
     def __getitem__(self, item):

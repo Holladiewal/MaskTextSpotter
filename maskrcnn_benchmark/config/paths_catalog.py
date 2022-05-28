@@ -121,6 +121,7 @@ class DatasetCatalog(object):
                 list_file_path=os.path.join(data_dir, 'synthtext/train_list.txt'),
                 imgs_dir=os.path.join(data_dir, attrs[0]),
                 gts_dir=add_gt_path(data_dir, attrs),
+                from_tar="_tar_" in name,
             )
             return dict(
                 args=args,
